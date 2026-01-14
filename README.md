@@ -6,29 +6,12 @@
 
 ### Implementation
 
-I developed a complete thermal resistance model following the step-by-step methodology from the reference documents.
+I developed a complete thermal resistance model integrated into a Flask API for serverless deployment.
 
-**Files Created:**
-- `app/thermal_model.py` - Core thermal calculations
-- `app/main.py` - Flask REST API
-
-### Validation Against Spreadsheet
-
-| Parameter | Model Result | Spreadsheet Reference | Status |
-|-----------|--------------|----------------------|--------|
-| Die Area | 0.002363 m² | 0.002363 m² | ✓ |
-| Fin Spacing | 0.001153 m | 0.001153 m | ✓ |
-| R_jc | 0.200 °C/W | 0.200 °C/W | ✓ |
-| R_tim | 0.01058 °C/W | 0.01058 °C/W | ✓ |
-| R_cond | 0.00634 °C/W | 0.00634 °C/W | ✓ |
-| Reynolds Number | 73.41 | 73.50 | ✓ |
-| Flow Regime | Laminar | Laminar | ✓ |
-| Nusselt Number | 2.048 | 2.049 | ✓ |
-| h_convection | 23.28 W/m²K | 23.29 W/m²K | ✓ |
-| A_total | 0.2707 m² | 0.2750 m² | ✓ |
-| R_conv | 0.159 °C/W | 0.156 °C/W | ✓ |
-| R_total | 0.376 °C/W | 0.373 °C/W | ✓ |
-| Junction Temp | 81.3 °C | 81.0 °C | ✓ |
+**Files:**
+- `app/main.py` - Flask REST API with integrated thermal model
+- `vercel.json` - Deployment configuration
+- `requirements.txt` - Python dependencies
 
 ### Flask API Endpoints
 
@@ -36,20 +19,23 @@ I developed a complete thermal resistance model following the step-by-step metho
 |----------|--------|-------------|
 | `/` | GET | API documentation |
 | `/health` | GET | Health check |
-| `/analyze/default` | GET | Run with default parameters |
+| `/analyze` | GET | Run with default parameters |
 | `/analyze` | POST | Run with custom JSON parameters |
 
 ### Running the Application
 
 ```bash
-cd app
-python main.py
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
+python app/main.py
 ```
 
 ### Example API Usage
 
 ```bash
-curl -X POST http://localhost:5000/analyze \
+curl -X POST https://thermal-assessment.vercel.app/analyze \
   -H "Content-Type: application/json" \
   -d '{"tdp": 200, "air_velocity": 2.0}'
 ```
@@ -392,10 +378,7 @@ Assessment/
 
 ```bash
 # Install dependencies
-pip install -e .
-
-# Run thermal model validation
-python app/thermal_model.py
+pip install -r requirements.txt
 
 # Start Flask API
 python app/main.py
@@ -403,7 +386,7 @@ python app/main.py
 
 ### API Demo
 
-The Flask API is accessible at `http://localhost:5000` with full thermal analysis capabilities.
+The Flask API is accessible at `https://thermal-assessment.vercel.app` (or `http://localhost:5000` locally) with full thermal analysis capabilities.
 
 ---
 
