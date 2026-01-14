@@ -290,7 +290,7 @@ I have hands-on experience with both Node.js and React.js in production environm
 **Projects:**
 - REST API development with Express.js
 - Real-time applications with Socket.io
-- Database integration (PostgreSQL, MongoDB)
+- Database integration (PostgreSQL)
 - Authentication systems (JWT, OAuth)
 - Microservices architecture
 
@@ -305,7 +305,7 @@ I have hands-on experience with both Node.js and React.js in production environm
 
 **Projects:**
 - Single-page applications with React
-- State management (Redux, Zustand, React Query)
+- State management (Redux, React Query)
 - Component libraries and design systems
 - Data visualization dashboards
 - Form handling and validation
@@ -407,5 +407,5 @@ The Flask API is accessible at `http://localhost:5000` with full thermal analysi
 
 ---
 
-*Submitted by: [Your Name]*  
-*Date: January 13, 2026*
+*Submitted by: [vivek kumar yadav]*  
+*Date: January 14, 2026*
