@@ -1,5 +1,11 @@
 # Expert Thermal - Assessment Submission
 
+**Submitted by:** Vivek Kumar Yadav  
+**Email:** [vivek@vivekmind.com](mailto:vivek@vivekmind.com)  
+**Portfolio:** [cv.vivekmind.com](https://cv.vivekmind.com)  
+**Live Deployment:** [https://thermal-assessment.vercel.app](https://thermal-assessment.vercel.app)  
+**Date:** January 14, 2026
+
 ---
 
 ## Question 1: Python Model + Flask
@@ -388,9 +394,3 @@ python app/main.py
 
 The Flask API is accessible at `https://thermal-assessment.vercel.app` (or `http://localhost:5000` locally) with full thermal analysis capabilities.
 
----
-
-*Submitted by: Vivek Kumar Yadav*  
-*Email: [vivek@vivekmind.com](mailto:vivek@vivekmind.com)*  
-*Portfolio: [cv.vivekmind.com](https://cv.vivekmind.com)*  
-*Date: January 14, 2026*
