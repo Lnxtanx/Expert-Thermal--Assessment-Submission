@@ -19,16 +19,19 @@ I developed a complete thermal resistance model following the step-by-step metho
 | Die Area | 0.002363 m² | 0.002363 m² | ✓ |
 | Fin Spacing | 0.001153 m | 0.001153 m | ✓ |
 | R_jc | 0.200 °C/W | 0.200 °C/W | ✓ |
-| R_tim | 0.01058 °C/W | 0.01058 °C/W | ✓ |
-| R_cond | 0.00634 °C/W | 0.00634 °C/W | ✓ |
-| Reynolds Number | 73.41 | 73.50 | ✓ |
+| R_tim | 0.010582 °C/W | 0.010582 °C/W | ✓ |
+| R_cond | 0.006337 °C/W | 0.006337 °C/W | ✓ |
+| Reynolds Number | 73.50 | 73.50 | ✓ |
 | Flow Regime | Laminar | Laminar | ✓ |
-| Nusselt Number | 2.048 | 2.049 | ✓ |
-| h_convection | 23.28 W/m²K | 23.29 W/m²K | ✓ |
-| A_total | 0.2707 m² | 0.2750 m² | ✓ |
-| R_conv | 0.159 °C/W | 0.156 °C/W | ✓ |
-| R_total | 0.376 °C/W | 0.373 °C/W | ✓ |
-| Junction Temp | 81.3 °C | 81.0 °C | ✓ |
+| Nusselt Number | 2.0489 | 2.0489 | ✓ |
+| h_convection | 23.288 W/m²K | 23.288 W/m²K | ✓ |
+| Single Fin Area | 0.004482 m² | 0.004482 m² | ✓ |
+| Total Fin Area | 0.268920 m² | 0.268920 m² | ✓ |
+| Base Area | 0.006120 m² | 0.006120 m² | ✓ |
+| A_total | 0.275040 m² | 0.275040 m² | ✓ |
+| R_conv | 0.156125 °C/W | 0.156125 °C/W | ✓ |
+| R_total | 0.373043 °C/W | 0.373043 °C/W | ✓ |
+| Junction Temp | 80.96 °C | 80.96 °C | ✓ |
 
 ### Flask API Endpoints
 

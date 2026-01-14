@@ -1,180 +1,200 @@
 import math
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass
+class ThermalParameters:
+    die_length: float = 0.0525
+    die_width: float = 0.045
+    die_thickness: float = 0.0022
+    tdp: float = 150.0
+    sink_length: float = 0.09
+    sink_width: float = 0.116
+    base_thickness: float = 0.0025
+    num_fins: int = 60
+    fin_thickness: float = 0.0008
+    overall_height: float = 0.027
+    fin_height: float = 0.0245
+    k_aluminum: float = 167.0
+    k_tim: float = 4.0
+    tim_thickness: float = 0.0001
+    k_air: float = 0.0262
+    kinematic_viscosity: float = 1.568e-5
+    prandtl_number: float = 0.71
+    air_velocity: float = 1.0
+    ambient_temp: float = 25.0
+    r_jc: float = 0.2
 
 
 class ThermalModel:
-    def __init__(
-        self,
-        die_length: float = 0.0525,
-        die_width: float = 0.045,
-        die_thickness: float = 0.0022,
-        tdp: float = 150.0,
-        sink_length: float = 0.09,
-        sink_width: float = 0.116,
-        base_thickness: float = 0.0025,
-        num_fins: int = 60,
-        fin_thickness: float = 0.0008,
-        overall_height: float = 0.027,
-        fin_height: float = 0.0245,
-        k_aluminum: float = 167.0,
-        k_tim: float = 4.0,
-        tim_thickness: float = 0.0001,
-        k_air: float = 0.0262,
-        kinematic_viscosity: float = 1.57e-5,
-        prandtl_number: float = 0.71,
-        air_velocity: float = 1.0,
-        ambient_temp: float = 25.0,
-        r_jc: float = 0.2,
-    ):
-        self.die_length = die_length
-        self.die_width = die_width
-        self.die_thickness = die_thickness
-        self.tdp = tdp
-        self.sink_length = sink_length
-        self.sink_width = sink_width
-        self.base_thickness = base_thickness
-        self.num_fins = num_fins
-        self.fin_thickness = fin_thickness
-        self.overall_height = overall_height
-        self.fin_height = fin_height
-        self.k_aluminum = k_aluminum
-        self.k_tim = k_tim
-        self.tim_thickness = tim_thickness
-        self.k_air = k_air
-        self.kinematic_viscosity = kinematic_viscosity
-        self.prandtl_number = prandtl_number
-        self.air_velocity = air_velocity
-        self.ambient_temp = ambient_temp
-        self.r_jc = r_jc
+    LAMINAR_THRESHOLD = 2300
 
-    def calculate_die_area(self) -> float:
-        return self.die_length * self.die_width
-
-    def calculate_base_area(self) -> float:
-        return self.sink_length * self.sink_width
-
-    def calculate_fin_spacing(self) -> float:
-        total_fin_width = self.num_fins * self.fin_thickness
-        return (self.sink_width - total_fin_width) / (self.num_fins - 1)
-
-    def calculate_r_tim(self) -> float:
-        die_area = self.calculate_die_area()
-        return self.tim_thickness / (self.k_tim * die_area)
-
-    def calculate_r_conduction(self) -> float:
-        die_area = self.calculate_die_area()
-        return self.base_thickness / (self.k_aluminum * die_area)
-
-    def calculate_reynolds_number(self) -> float:
-        fin_spacing = self.calculate_fin_spacing()
-        return (self.air_velocity * fin_spacing) / self.kinematic_viscosity
-
-    def calculate_nusselt_number(self) -> float:
-        re = self.calculate_reynolds_number()
-        pr = self.prandtl_number
-        fin_spacing = self.calculate_fin_spacing()
-
-        if re < 2300:
-            term = (re * pr * 2 * fin_spacing) / self.sink_length
-            nu = 1.86 * math.pow(term, 1 / 3)
+    def __init__(self, params: ThermalParameters | None = None, **kwargs: Any):
+        if params is not None:
+            self.params = params
         else:
-            nu = 0.023 * math.pow(re, 0.8) * math.pow(pr, 0.3)
+            self.params = ThermalParameters(**kwargs)
 
-        return nu
+    @property
+    def die_area(self) -> float:
+        return self.params.die_length * self.params.die_width
 
-    def calculate_convection_coefficient(self) -> float:
-        nu = self.calculate_nusselt_number()
-        fin_spacing = self.calculate_fin_spacing()
-        return (nu * self.k_air) / (2 * fin_spacing)
+    @property
+    def base_area(self) -> float:
+        return self.params.sink_length * self.params.sink_width
 
-    def calculate_total_convection_area(self) -> float:
-        single_fin_area = 2 * self.fin_height * self.sink_length
-        total_fin_area = single_fin_area * self.num_fins
-        base_exposed_area = self.calculate_base_area() - (
-            self.num_fins * self.fin_thickness * self.sink_length
+    @property
+    def fin_spacing(self) -> float:
+        total_fin_width = self.params.num_fins * self.params.fin_thickness
+        return (self.params.sink_width - total_fin_width) / (self.params.num_fins - 1)
+
+    @property
+    def reynolds_number(self) -> float:
+        return (self.params.air_velocity * self.fin_spacing) / self.params.kinematic_viscosity
+
+    @property
+    def flow_regime(self) -> str:
+        return "Laminar" if self.reynolds_number < self.LAMINAR_THRESHOLD else "Turbulent"
+
+    @property
+    def nusselt_number(self) -> float:
+        re = self.reynolds_number
+        pr = self.params.prandtl_number
+
+        if re < self.LAMINAR_THRESHOLD:
+            term = (re * pr * 2 * self.fin_spacing) / self.params.sink_length
+            return 1.86 * math.pow(term, 1 / 3)
+        else:
+            return 0.023 * math.pow(re, 0.8) * math.pow(pr, 0.3)
+
+    @property
+    def convection_coefficient(self) -> float:
+        return (self.nusselt_number * self.params.k_air) / (2 * self.fin_spacing)
+
+    @property
+    def single_fin_area(self) -> float:
+        return (2 * self.params.fin_height + self.params.fin_thickness) * self.params.sink_length
+
+    @property
+    def total_fin_area(self) -> float:
+        return self.single_fin_area * self.params.num_fins
+
+    @property
+    def base_exposed_area(self) -> float:
+        return self.params.sink_length * (
+            self.params.sink_width - self.params.num_fins * self.params.fin_thickness
         )
-        return total_fin_area + base_exposed_area
 
-    def calculate_r_convection(self) -> float:
-        h_conv = self.calculate_convection_coefficient()
-        a_total = self.calculate_total_convection_area()
-        return 1 / (h_conv * a_total)
+    @property
+    def total_convection_area(self) -> float:
+        return self.total_fin_area + self.base_exposed_area
 
-    def calculate_r_heatsink(self) -> float:
-        r_cond = self.calculate_r_conduction()
-        r_conv = self.calculate_r_convection()
-        return r_cond + r_conv
+    @property
+    def r_tim(self) -> float:
+        return self.params.tim_thickness / (self.params.k_tim * self.die_area)
 
-    def calculate_total_resistance(self) -> float:
-        r_tim = self.calculate_r_tim()
-        r_hs = self.calculate_r_heatsink()
-        return self.r_jc + r_tim + r_hs
+    @property
+    def r_conduction(self) -> float:
+        return self.params.base_thickness / (self.params.k_aluminum * self.die_area)
 
-    def calculate_junction_temperature(self) -> float:
-        r_total = self.calculate_total_resistance()
-        return self.ambient_temp + (self.tdp * r_total)
+    @property
+    def r_convection(self) -> float:
+        return 1 / (self.convection_coefficient * self.total_convection_area)
 
-    def get_flow_regime(self) -> str:
-        re = self.calculate_reynolds_number()
-        return "Laminar" if re < 2300 else "Turbulent"
+    @property
+    def r_heatsink(self) -> float:
+        return self.r_conduction + self.r_convection
 
-    def get_full_analysis(self) -> dict:
+    @property
+    def total_resistance(self) -> float:
+        return self.params.r_jc + self.r_tim + self.r_heatsink
+
+    @property
+    def junction_temperature(self) -> float:
+        return self.params.ambient_temp + (self.params.tdp * self.total_resistance)
+
+    def calculate(self) -> dict:
         return {
-            "input_parameters": {
-                "die_length_m": self.die_length,
-                "die_width_m": self.die_width,
-                "die_area_m2": self.calculate_die_area(),
-                "tdp_w": self.tdp,
-                "sink_length_m": self.sink_length,
-                "sink_width_m": self.sink_width,
-                "base_thickness_m": self.base_thickness,
-                "num_fins": self.num_fins,
-                "fin_thickness_m": self.fin_thickness,
-                "fin_height_m": self.fin_height,
-                "fin_spacing_m": self.calculate_fin_spacing(),
-                "ambient_temp_c": self.ambient_temp,
-                "air_velocity_m_s": self.air_velocity,
-            },
-            "thermal_resistances": {
-                "r_jc_c_per_w": self.r_jc,
-                "r_tim_c_per_w": self.calculate_r_tim(),
-                "r_conduction_c_per_w": self.calculate_r_conduction(),
-                "r_convection_c_per_w": self.calculate_r_convection(),
-                "r_heatsink_c_per_w": self.calculate_r_heatsink(),
-                "r_total_c_per_w": self.calculate_total_resistance(),
-            },
-            "heat_transfer": {
-                "reynolds_number": self.calculate_reynolds_number(),
-                "flow_regime": self.get_flow_regime(),
-                "nusselt_number": self.calculate_nusselt_number(),
-                "convection_coefficient_w_m2k": self.calculate_convection_coefficient(),
-                "total_convection_area_m2": self.calculate_total_convection_area(),
+            "inputs": {
+                "processor": {
+                    "die_length_m": self.params.die_length,
+                    "die_width_m": self.params.die_width,
+                    "die_area_m2": round(self.die_area, 6),
+                    "tdp_W": self.params.tdp,
+                },
+                "heatsink": {
+                    "sink_length_m": self.params.sink_length,
+                    "sink_width_m": self.params.sink_width,
+                    "base_thickness_m": self.params.base_thickness,
+                    "num_fins": self.params.num_fins,
+                    "fin_thickness_m": self.params.fin_thickness,
+                    "fin_height_m": self.params.fin_height,
+                    "fin_spacing_m": round(self.fin_spacing, 6),
+                    "material": "Aluminum (Al 6061-T6)",
+                    "k_aluminum_W_mK": self.params.k_aluminum,
+                },
+                "thermal_interface": {
+                    "material": "Thermal Grease",
+                    "k_tim_W_mK": self.params.k_tim,
+                    "thickness_m": self.params.tim_thickness,
+                },
+                "cooling": {
+                    "medium": "Air",
+                    "ambient_temp_C": self.params.ambient_temp,
+                    "air_velocity_m_s": self.params.air_velocity,
+                    "k_air_W_mK": self.params.k_air,
+                    "kinematic_viscosity_m2_s": self.params.kinematic_viscosity,
+                    "prandtl_number": self.params.prandtl_number,
+                },
             },
             "results": {
-                "junction_temperature_c": self.calculate_junction_temperature(),
+                "junction_temperature_C": round(self.junction_temperature, 2),
+                "total_resistance_C_W": round(self.total_resistance, 6),
+            },
+            "physics_debug": {
+                "flow_analysis": {
+                    "reynolds_number": round(self.reynolds_number, 6),
+                    "flow_regime": self.flow_regime,
+                    "nusselt_number": round(self.nusselt_number, 6),
+                    "convection_coefficient_W_m2K": round(self.convection_coefficient, 6),
+                },
+                "surface_areas": {
+                    "single_fin_area_m2": round(self.single_fin_area, 6),
+                    "total_fin_area_m2": round(self.total_fin_area, 6),
+                    "base_exposed_area_m2": round(self.base_exposed_area, 6),
+                    "total_convection_area_m2": round(self.total_convection_area, 6),
+                },
+                "thermal_resistances": {
+                    "R_jc_C_W": round(self.params.r_jc, 6),
+                    "R_tim_C_W": round(self.r_tim, 6),
+                    "R_cond_C_W": round(self.r_conduction, 6),
+                    "R_conv_C_W": round(self.r_convection, 6),
+                    "R_heatsink_C_W": round(self.r_heatsink, 6),
+                    "R_total_C_W": round(self.total_resistance, 6),
+                },
             },
         }
 
 
 if __name__ == "__main__":
     model = ThermalModel()
-    results = model.get_full_analysis()
+    results = model.calculate()
 
     print("=" * 60)
     print("THERMAL MODEL VALIDATION")
     print("=" * 60)
 
-    print("\n--- Input Parameters ---")
-    for key, value in results["input_parameters"].items():
-        print(f"  {key}: {value:.6f}" if isinstance(value, float) else f"  {key}: {value}")
-
-    print("\n--- Thermal Resistances (°C/W) ---")
-    for key, value in results["thermal_resistances"].items():
-        print(f"  {key}: {value:.6f}")
-
-    print("\n--- Heat Transfer ---")
-    for key, value in results["heat_transfer"].items():
-        print(f"  {key}: {value:.6f}" if isinstance(value, float) else f"  {key}: {value}")
-
     print("\n--- Results ---")
-    print(f"  Junction Temperature: {results['results']['junction_temperature_c']:.2f} °C")
+    print(f"  Junction Temperature: {results['results']['junction_temperature_C']} °C")
+    print(f"  Total Resistance: {results['results']['total_resistance_C_W']} °C/W")
+
+    print("\n--- Flow Analysis ---")
+    for key, value in results["physics_debug"]["flow_analysis"].items():
+        print(f"  {key}: {value}")
+
+    print("\n--- Thermal Resistances ---")
+    for key, value in results["physics_debug"]["thermal_resistances"].items():
+        print(f"  {key}: {value}")
+
     print("=" * 60)

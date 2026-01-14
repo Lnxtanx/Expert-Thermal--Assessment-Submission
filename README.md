@@ -407,5 +407,7 @@ The Flask API is accessible at `http://localhost:5000` with full thermal analysi
 
 ---
 
-*Submitted by: [Your Name]*  
+*Submitted by: Vivek Kumar Yadav*  
+*Email: [vivek@vivekmind.com](mailto:vivek@vivekmind.com)*  
+*Portfolio: [cv.vivekmind.com](https://cv.vivekmind.com)*  
 *Date: January 13, 2026*
